@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AI - المحادثة الجزائرية الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 92vh;
+            background: #ffffff;
+            color: #333;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #ffffff;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+            position: relative;
+        }
+
+        /* 1. واجهة الترحيب */
+        .welcome-screen {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .welcome-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-screen h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-screen p {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            background: #ffffff;
+            color: #0072ff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: #f8f9fa;
+        }
+
+        /* 2. واجهة التعريف بموقع */
+        .about-screen {
+            padding: 30px 20px;
+            justify-content: space-between;
+        }
+
+        .about-content h2 {
+            color: #4a90e2;
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feature-card {
+            background: #f4f7f6;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .feature-card span {
+            font-size: 24px;
+        }
+
+        .feature-card h4 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 3. واجهة الشات الحقيقي */
+        .chat-header {
+            background: #4a90e2;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .chat-info h3 {
+            font-size: 16px;
+            margin-bottom: 0;
+        }
+
+        .chat-info p {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #eef2f5;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.bot {
+            background: #ffffff;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-right-radius: 3px;
+        }
+
+        .message.user {
+            background: #4a90e2;
+            color: white;
+            align-self: flex-end;
+            border-bottom-left-radius: 3px;
+        }
+
+        .message-time {
+            font-size: 9px;
+            opacity: 0.6;
+            margin-top: 4px;
+            text-align: left;
+        }
+
+        /* مؤشر الكتابة الاحترافي */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #ffffff;
+            padding: 10px 15px;
+            border-radius: 14px;
+            border-bottom-right-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            height: 15px;
+        }
+
+        .typing-dots span {
+            width: 7px;
+            height: 7px;
+            background: #90a4ae;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .chat-input-area {
+            padding: 12px 15px;
+            background: #ffffff;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #ddd;
+            align-items: center;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            background: #f9f9f9;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #4a90e2;
+            background: #fff;
+        }
+
+        .send-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #357abd;
+        }
+
+        .footer-credit {
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            padding: 5px;
+            background: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            font-weight: 600;
+        }
+        .footer-credit span {
+            color: #4a90e2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- 1. واجهة الترحيب -->
+        <div id="screenWelcome" class="screen welcome-screen active">
+            <div class="welcome-avatar">🇩🇿</div>
+            <h1>مرحباً بك</h1>
+            <p>أول رفيقة ذكاء اصطناعي جزائرية بلهجة محلية رائعة، تفاعل معها وكأنها حقيقية تماماً!</p>
+            <button class="btn-primary" onclick="goToScreen('screenAbout')">ابدأ التعرف على الموقع</button>
+        </div>
+
+        <!-- 2. واجهة التعريف بموقع -->
+        <div id="screenAbout" class="screen about-screen">
+            <div class="about-content">
+                <h2>عن الموقع</h2>
+                <div class="feature-card">
+                    <span>🤖</span>
+                    <div>
+                        <h4>ذكاء اصطناعي متطور</h4>
+                        <p>محادثات ذكية ومخصصة بالكامل باللهجة الجزائرية.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span>⚡</span>
+                    <div>
+                        <h4>سرعة استجابة فائقة</h4>
+                        <p>ربط مباشر وسريع عبر سيرفرات API حديثة.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span>💬</span>
+                    <div>
+                        <h4>شات حي وواقعي</h4>
+                        <p>مؤشر كتابة تفاعلي وتصميم يشبه تطبيقات المراسلة.</p>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" style="background: #4a90e2; color: white; width: 100%;" onclick="goToScreen('screenChat')">الدخول إلى الشات الآن</button>
+        </div>
+
+        <!-- 3. واجهة الشات الحقيقي -->
+        <div id="screenChat" class="screen" style="flex-direction: column;">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">👩🏻</div>
+                    <div class="chat-info">
+                        <h3>Girl 🇩🇿</h3>
+                        <p>متواجدة الآن •</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="clearChat()" title="مسح المحادثة">🗑️</button>
+                    <button class="icon-btn" onclick="goToScreen('screenAbout')" title="العودة للتعريف">ℹ️</button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- ستعبأ الرسائل هنا تلقائياً من الذاكرة -->
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="userInput" placeholder="اكتب رسالتك هنا..." autocomplete="off">
+                <button class="send-btn" id="sendBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+
+            <div class="footer-credit">
+                Developed By <span>FaresCodeX</span> 🚀
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const apiKey = "sk-visco-dz-8KQ7X2N";
+        
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            if(screenId === 'screenChat') {
+                scrollToBottom();
+            }
+        }
+
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        // تحميل المحادثات المحفوظة عند فتح الموقع
+        function loadChatHistory() {
+            const savedMessages = localStorage.getItem('rimas_chat_history');
+            if (savedMessages) {
+                chatMessages.innerHTML = savedMessages;
+            } else {
+                // رسالة ترحيبية افتراضية لو ماكانش كاين تاريخ محفوظ
+                appendMessage("أهلين، واش راك اليوم؟ 😊", 'bot', false);
+            }
+            scrollToBottom();
+        }
+
+        // حفظ المحادثة في الذاكرة المحلية
+        function saveChatHistory() {
+            localStorage.setItem('rimas_chat_history', chatMessages.innerHTML);
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user', true);
+            userInput.value = '';
+            
+            typingIndicator.style.display = 'block';
+            scrollToBottom();
+
+            try {
+                const url = `https://viscodev.x10.mx/Rimas/Rimas.php?text=${encodeURIComponent(text)}&key=${apiKey}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                typingIndicator.style.display = 'none';
+
+                if (data && data.success && data.reply) {
+                    let cleanReply = data.reply;
+
+                    // مسح النجوم وما بينها (الحركات التعبيرية)
+                    cleanReply = cleanReply.replace(/\*.*?\*/g, '').trim();
+                    cleanReply = cleanReply.replace(/["«»]/g, '').trim();
+
+                    // استبدال فيسكو بـ لوسيفر
+                    cleanReply = cleanReply.replace(/فيسكو/gi, 'لوسيفر');
+                    cleanReply = cleanReply.replace(/visco/gi, 'لوسيفر');
+
+                    if (cleanReply) {
+                        appendMessage(cleanReply, 'bot', true);
+                    } else {
+                        appendMessage("أهلاً بك! راني نسمع فيك، كمل هدرتك.", 'bot', true);
+                    }
+                } else {
+                    appendMessage("سامحني، ما فهمتكش مليح. عاود من فضلك!", 'bot', true);
+                }
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                appendMessage("عذراً، حدث خطأ في الاتصال بالشبكة.", 'bot', true);
+                console.error(error);
+            }
+        }
+
+        function appendMessage(text, sender, save = true) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            
+            const timeSpan = document.createElement('div');
+            timeSpan.classList.add('message-time');
+            timeSpan.textContent = getCurrentTime();
+
+            messageDiv.textContent = text;
+            messageDiv.appendChild(timeSpan);
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+
+            if (save) {
+                saveChatHistory();
+            }
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function clearChat() {
+            localStorage.removeItem('rimas_chat_history'); // مسح الذاكرة نهائياً
+            chatMessages.innerHTML = `
+                <div class="message bot">
+                    تم مسح المحادثة. واش حبّيت نحكيوا دوكا؟ 😊
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            saveChatHistory();
+        }
+
+        // تشغيل تحميل الشات عند بداية فتح الصفحة
+        window.onload = function() {
+            loadChatHistory();
+        };
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
